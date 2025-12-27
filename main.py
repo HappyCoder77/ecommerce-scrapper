@@ -1,21 +1,22 @@
-from models import Product
+from scrapper import BookScrapper
 
 
-def run_test():
-    # Creating a sample product instance
-    # Note: price is a float and rating is Optional
-    sample_item = Product(
-        name="Python Crash Course",
-        price=25.99,
-        rating=4.8,
-        url="https://example.com/python-book",
-    )
+def run_app():
+    scrapper = BookScrapper()
+    print("--- Fetching data from Books to Scrape ---")
 
-    print("-----------Product test-----------")
-    print(f"Product name: {sample_item.name}")
-    print(f"Formated price: {sample_item.price:.2f}")
-    print(f"Full object: {sample_item}")
+    try:
+        html = scrapper.fetch_html()
+        books = scrapper.parse_products(html=html)
+
+        print(f"Found: {len(books)} books:\n")
+
+        for book in books:
+            print(f"-{book.name}: {book.price}")
+
+    except Exception as e:
+        print(f"An error ocurred: {e}")
 
 
 if __name__ == "__main__":
-    run_test()
+    run_app()
