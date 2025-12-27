@@ -2,7 +2,7 @@
 venv/
 env/
 .env/
-ecommerce-scrappper-env/
+ecommerce-scrapper-env/
 
 # Archivos de caché de Python
 __pycache__/
