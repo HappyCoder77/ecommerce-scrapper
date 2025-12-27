@@ -1,3 +1,4 @@
+import time
 import requests
 from bs4 import BeautifulSoup, Tag
 from typing import List, Dict
@@ -21,13 +22,33 @@ class BookScrapper:
             "Five": 5.0,
         }
 
-    def fetch_html(self, url: str) -> str:
-        """Fetch the HTML content from the URL."""
+    def fetch_html(self, url: str, retries: int = 3, delay: int = 2) -> str:
+        """
+        Fetch the HTML content with a retry strategy to handle network blips.
 
-        response = requests.get(url, headers=self.headers)
-        response.raise_for_status()
+        Args:
+            url: The URL to fetch.
+            retries: Number of times to retry if it fails.
+            delay: Seconds to wait between retries.
+        """
+        for i in range(retries):
 
-        return response.text
+            try:
+                response = requests.get(url, headers=self.headers, timeout=10)
+                response.raise_for_status()
+                return response.text
+            except requests.RequestException as e:
+
+                if i < retries - 1:
+                    print(
+                        f"f [Warning] atempt {i + 1} failed for {url} retrying in {delay}s..."
+                    )
+                    time.sleep(delay)
+                else:
+                    print(f" [Error] All {retries} attempts failed for {url}.")
+                    raise e
+
+        return ""
 
     def parse_products(self, html: str) -> List[Product]:
         """Extract book data and convert it into Product objects."""
