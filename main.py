@@ -1,4 +1,5 @@
 from scrapper import BookScrapper
+from exporter import export_to_csv
 
 
 def run_app():
@@ -11,8 +12,11 @@ def run_app():
 
         print(f"Found: {len(books)} books:\n")
 
-        for book in books:
-            print(f"-{book.name}: {book.price}")
+        if books:
+            export_to_csv(books)
+            print("Process finished successfully!")
+        else:
+            print("No data found to export.")
 
     except Exception as e:
         print(f"An error ocurred: {e}")
