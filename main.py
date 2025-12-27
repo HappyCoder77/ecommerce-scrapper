@@ -7,8 +7,7 @@ def run_app():
     print("--- Fetching data from Books to Scrape ---")
 
     try:
-        html = scrapper.fetch_html()
-        books = scrapper.parse_products(html=html)
+        books = scrapper.scrape_all_pages()
 
         print(f"Found: {len(books)} books:\n")
 

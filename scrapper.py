@@ -21,10 +21,10 @@ class BookScrapper:
             "Five": 5.0,
         }
 
-    def fetch_html(self) -> str:
+    def fetch_html(self, url: str) -> str:
         """Fetch the HTML content from the URL."""
 
-        response = requests.get(self.base_url, headers=self.headers)
+        response = requests.get(url, headers=self.headers)
         response.raise_for_status()
 
         return response.text
@@ -80,3 +80,34 @@ class BookScrapper:
             products.append(new_product)
 
         return products
+
+    def scrape_all_pages(self) -> List[Product]:
+        """Iterates through all pages using the 'Next' button."""
+
+        all_products: List[Product] = []
+        current_url: str | None = self.base_url
+
+        while current_url:
+            print(f"Scrapping: {current_url}")
+            html = self.fetch_html(current_url)
+
+            page_products = self.parse_products(html)
+            all_products.extend(page_products)
+
+            soup = BeautifulSoup(html, "html.parser")
+            next_button = soup.find("li", class_="next")
+
+            if next_button and next_button.a:
+                relative_next = str(next_button.a.get("href"))
+
+                if "catalogue/" in current_url:
+                    current_url = (
+                        f"https://books.toscrape.com/catalogue/{relative_next}"
+                    )
+                else:
+                    current_url = f"https://books.toscrape.com/{relative_next}"
+
+            else:
+                current_url = None
+
+        return all_products
