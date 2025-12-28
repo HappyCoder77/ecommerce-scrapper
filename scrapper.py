@@ -1,5 +1,6 @@
 import time
 import requests
+from tqdm import tqdm
 from bs4 import BeautifulSoup, Tag
 from typing import List, Dict
 from models import Product
@@ -108,27 +109,31 @@ class BookScrapper:
         all_products: List[Product] = []
         current_url: str | None = self.base_url
 
-        while current_url:
-            print(f"Scrapping: {current_url}")
-            html = self.fetch_html(current_url)
+        progress_bar = tqdm(total=50, desc="Scraping pages", unit="page")
 
-            page_products = self.parse_products(html)
-            all_products.extend(page_products)
+        try:
+            while current_url:
+                html = self.fetch_html(current_url)
 
-            soup = BeautifulSoup(html, "html.parser")
-            next_button = soup.find("li", class_="next")
+                page_products = self.parse_products(html)
+                all_products.extend(page_products)
 
-            if next_button and next_button.a:
-                relative_next = str(next_button.a.get("href"))
+                progress_bar.update(1)
+                soup = BeautifulSoup(html, "html.parser")
+                next_button = soup.find("li", class_="next")
 
-                if "catalogue/" in current_url:
-                    current_url = (
-                        f"https://books.toscrape.com/catalogue/{relative_next}"
-                    )
+                if next_button and next_button.a:
+                    relative_next = str(next_button.a.get("href"))
+
+                    if "catalogue/" in current_url:
+                        current_url = (
+                            f"https://books.toscrape.com/catalogue/{relative_next}"
+                        )
+                    else:
+                        current_url = f"https://books.toscrape.com/{relative_next}"
+
                 else:
-                    current_url = f"https://books.toscrape.com/{relative_next}"
-
-            else:
-                current_url = None
-
+                    current_url = None
+        finally:
+            progress_bar.close
         return all_products
